@@ -112,12 +112,14 @@ void eventLoadButton()
 {
 	//load button on the main screen
 	char** data = NULL;
-	int size;
+	int size = 0;
 	eventGetLoadInfo("./", &data, &size); //grab file info (text on the buttons)
 
 	eventPause();
 	uiSetContext(UI_CONTEXT_LOAD);
-	uiSetDataScrollbar("loadfn", data, size); //set the buttons up
+	
+	if(data != NULL)
+		uiSetDataScrollbar("loadfn", data, size); //set the buttons up
 
 	for(int i = 0; i < size; i++)
 	{

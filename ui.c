@@ -438,6 +438,12 @@ void uiSetDataScrollbar(const char* group, char** data, int size)
 				free(scroll[i]->data);
 			}
 
+			if(data == NULL)
+			{
+				uiLoadSelectorText(group, NULL, 0); //will set all selectors as inactive
+				return;
+			}
+
 			scroll[i]->data = (char**)calloc(size, sizeof(char*));
 			for(int j = 0; j < size; j++)
 			{
