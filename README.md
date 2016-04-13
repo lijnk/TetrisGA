@@ -5,3 +5,4 @@ It includes general features such as saving and loading simulation files, pausin
 
 The required headers and libraries are located in inc and lib respectively for cross-compiling for Windows, whereas Linux requires GLFW3 to be installed.
 
+Uses GLFW3, stb\_image.h from [nothings.org](http://nothings.org) and a slightly modified version of BitStream Vera Sans Mono font (in order to fit things better).
