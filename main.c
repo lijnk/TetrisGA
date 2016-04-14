@@ -7,6 +7,8 @@
 #include "console.h"
 #include "events.h"
 
+static int fpscap;
+
 //No idea what we'll do here, but for now, let's keep it in
 static void error_callback(int error, const char* description)
 {
@@ -89,7 +91,10 @@ void splitCMD(const char* input, char*** params, int* pcount)
 void parseCommand()
 {
 	if(!consoleGetEnabled()) return;
-	consolePrint(consoleGetLine(), CON_MSG);
+	char* printcmd = (char*)calloc(strlen(consoleGetLine()) + 3, CON_MSG);
+	sprintf(printcmd, "> %s", consoleGetLine());
+	consolePrint(printcmd, CON_MSG);
+	free(printcmd);
 
 	if(consoleGetLineLength() == 0) return;
 
@@ -98,37 +103,79 @@ void parseCommand()
 	splitCMD(consoleGetLine(), &argv, &argc);
 
 	//commands and their respective events
-	if(strcmp(argv[0], "quit") == 0 && (argc == 1))
+	if(strcmp(argv[0], "quit") == 0)
 	{
 		eventQuit();
 	}
-	else if(strcmp(argv[0], "pause") == 0 && (argc == 1))
+	else if(strcmp(argv[0], "pause") == 0)
 	{
 		eventPause();
 	}
-	else if(strcmp(argv[0], "unpause") == 0 && (argc == 1))
+	else if(strcmp(argv[0], "unpause") == 0)
 	{
 		eventUnpause();
 	}
-	else if(strcmp(argv[0], "save") == 0 && (argc == 2))
+	else if(strcmp(argv[0], "save") == 0)
 	{
-		eventSave(argv[1]);
+		if(argc == 2)
+		{
+			eventSave(argv[1]);
+		}
+		else
+		{
+			consolePrint("Usage: save <filename>", CON_ERR);
+		}
 	}
-	else if(strcmp(argv[0], "load") == 0 && (argc == 2))
+	else if(strcmp(argv[0], "load") == 0)
 	{
-		eventLoad(argv[1]);
+		if(argc == 2)
+		{
+			eventLoad(argv[1]);
+		}
+		else
+		{
+			consolePrint("Usage: load <filename>", CON_ERR);
+		}
 	}
-	else if(strcmp(argv[0], "new") == 0 && (argc == 1))
+	else if(strcmp(argv[0], "new") == 0)
 	{
 		eventNew();
 	}
-	else if(strcmp(argv[0], "clear") == 0 && (argc == 1))
+	else if(strcmp(argv[0], "clear") == 0)
 	{
 		consoleClear();
 	}
-	else if(strcmp(argv[0], "toggledraw") == 0 && (argc == 1))
+	else if(strcmp(argv[0], "toggledraw") == 0)
 	{
-		eventToggleDraw();
+		if(argc == 1)
+		{
+			eventToggleDraw();
+		}
+	}
+	else if(strcmp(argv[0], "fpscap") == 0)
+	{
+		char msg[20];
+		if(argc == 1)
+		{
+			if(fpscap <= 0)
+			{
+				consolePrint("fpscap = unlimited", CON_MSG);
+			}
+			else
+			{
+				sprintf(msg, "fpscap = %d", fpscap);
+				consolePrint(msg, CON_MSG);
+			}
+		}
+		else if(argc == 2)
+		{
+			fpscap = (float)atoi(argv[1]);
+			if(fpscap < 0) fpscap = 0;
+		}
+		else
+		{
+			consolePrint("Usage: fpscap [value]", CON_ERR);
+		}
 	}
 	else if(strcmp(argv[0], "help") == 0 && (argc == 1))
 	{
@@ -140,6 +187,7 @@ void parseCommand()
 		consolePrint("new - Reinitialises game", CON_MSG);
 		consolePrint("clear - Clears console", CON_MSG);
 		consolePrint("toggledraw - Toggles drawing game and simulation on screen", CON_MSG);
+		consolePrint("fpscap [value] - Sets or reports fps cap (0 for unlimited)", CON_MSG);
 		consolePrint("quit - Quits game", CON_MSG);
 	}
 	else
@@ -268,6 +316,7 @@ int main(int argc, char** argv)
 {
 	GLFWwindow* window;
 	int width, height;
+	fpscap = 60;
 
 	//setup glfw stuff
 	glfwSetErrorCallback(error_callback);
@@ -318,16 +367,18 @@ int main(int argc, char** argv)
 
 	while(!glfwWindowShouldClose(window) && eventIsRunning())
 	{
-/*
-		//fps cap (60fps)
+		//fps cap (default 60)
 		double curr = glfwGetTime();
 		double elapse = 0;
 
-		while(elapse < (1.0 / 60.0))
+		if(fpscap > 0)
 		{
-			elapse = glfwGetTime() - curr;
+			while(elapse < (1.0 / fpscap))
+			{
+				elapse = glfwGetTime() - curr;
+			}
 		}
-*/
+
 		//logic
 		eventTick();
 

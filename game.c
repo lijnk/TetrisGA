@@ -168,7 +168,8 @@ void gameTick(Game* game)
 	{
 		Tetromino* temp = tetrominoCopy(game->activeMino);
 
-		if(!eventGetDraw()) drawSetReq();
+		if(eventGetDraw()) drawSetReq();
+		
 		tetrominoMoveY(temp, -1);
 		if(collisionCheck(game, temp)) //check if we've landed
 		{
