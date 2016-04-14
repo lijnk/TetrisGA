@@ -22,8 +22,7 @@ Engine
 
 Performance
 -Optimise save/load file (recalculate genes and update innovation number so we don't save data for extinct genes)
--Make headless version not open a window
--Optimise graphics routines (avoid recalling constantly)
+-Figure out headless version
 
 Bugs
 -Fix the network information not displaying
