@@ -1,8 +1,8 @@
 #for windows compile
 CC = i586-mingw32msvc-gcc -std=c99 -I./inc/
 CFLAGS = -c -std=c99 -I./inc/
-USE = -L./lib/ -mwindows -lglfw3 -lglu32 -lopengl32 -Wl,--subsystem,windows
-#USE = -L./lib/ -mwindows -lglfw3 -lglu32 -lopengl32 -Wl,--subsystem,console
+#USE = -L./lib/ -mwindows -lglfw3 -lglu32 -lopengl32 -Wl,--subsystem,windows
+USE = -L./lib/ -mwindows -lglfw3 -lglu32 -lopengl32 -Wl,--subsystem,console
 
 #for linux compile
 #CC = gcc -std=c99 -g

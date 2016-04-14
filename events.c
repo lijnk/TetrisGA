@@ -5,6 +5,7 @@ static Game* game;
 static Pool* pool;
 static int running;
 static int globalTick;
+static int draw;
 
 void eventInit()
 {
@@ -16,6 +17,7 @@ void eventInit()
 	neatInit(&pool);
 	globalTick = 0;
 	running = 1;
+	draw = 1;
 }
 
 void eventDestroy()
@@ -36,6 +38,7 @@ void eventNewButton()
 	//event for new button
 	eventPause();
 	uiSetContext(UI_CONTEXT_NEW);
+	drawSetReq();
 }
 
 void eventNew()
@@ -46,6 +49,7 @@ void eventNew()
 	neatInit(&pool);
 	gameRestart(game);
 	eventPause();
+	drawSetReq();
 }
 
 void eventNewSave()
@@ -54,6 +58,7 @@ void eventNewSave()
 	eventSave(uiGetTextboxText("savefn"));
 	uiSetContext(UI_CONTEXT_MAIN);
 	eventNew();
+	drawSetReq();
 }
 
 void eventNewCancel()
@@ -61,6 +66,7 @@ void eventNewCancel()
 	//event for discard button within the "new" screen
 	uiSetContext(UI_CONTEXT_MAIN);
 	eventNew();
+	drawSetReq();
 }
 
 void eventSave(const char* filename)
@@ -74,6 +80,7 @@ void eventSaveButton()
 	//save button on the main screen
 	eventPause();
 	uiSetContext(UI_CONTEXT_SAVE);
+	drawSetReq();
 }
 
 void eventSaveSaveButton()
@@ -95,6 +102,7 @@ void eventSaveSaveButton()
 	eventSave(filename);
 	uiSetContext(UI_CONTEXT_MAIN);
 	if(appended) free(filename);
+	drawSetReq();
 }
 
 void eventLoad(const char* filename)
@@ -126,6 +134,7 @@ void eventLoadButton()
 		free(data[i]);
 	}
 	free(data);
+	drawSetReq();
 }
 
 void eventLoadLoadButton()
@@ -141,6 +150,7 @@ void eventLoadLoadButton()
 	//load the system and switch contexts back to main
 	eventLoad(filename);
 	uiSetContext(UI_CONTEXT_MAIN);
+	drawSetReq();
 }
 
 void eventGetLoadInfo(const char* dir, char*** data, int* size)
@@ -209,6 +219,7 @@ void eventPause()
 	uiSetInactiveButton("Pause");
 	uiSetActiveButton("Unpause");
 	gamePause(game);
+	drawSetReq();
 }
 
 void eventUnpause()
@@ -217,17 +228,29 @@ void eventUnpause()
 	uiSetInactiveButton("Unpause");
 	uiSetActiveButton("Pause");
 	gameUnpause(game);
+	drawSetReq();
 }
 
 void eventCancelButton()
 {
 	uiSetContext(UI_CONTEXT_MAIN);
+	drawSetReq();
 }
 
-void eventDraw()
+int eventDraw()
 {
 	//our draw stuff
-	if(GRAPHICS_HEADLESS) return; //turn this on in gvars.h to go super fast
+	if(GRAPHICS_HEADLESS) return 0; //turn this on in gvars.h to go super fast
+	if(!drawGetReq()) return 0; //so we don't draw a million times per second
+
+	glClear(GL_COLOR_BUFFER_BIT);
+	if(!draw)
+	{
+		Pix bg = {0.1f, 0.1f, 0.1f, 1.f};
+		drawBG(bg);
+		drawConsole();
+		return 1;
+	}
 
 	//internal drawing stuff
 	gameDraw(game);
@@ -242,6 +265,8 @@ void eventDraw()
 		glDrawPixels(WINDOW_WIDTH, WINDOW_HEIGHT, GL_RGBA, GL_FLOAT, gameGetFG2(game));
 	}
 	drawUI();
+	drawResetReq();
+	return 1;
 }
 
 void eventTick()
@@ -290,6 +315,16 @@ void eventController()
   if(controls & 0x4) gameEvent(game, GAME_DOWN);
   if(controls & 0x8) gameEvent(game, GAME_ROTATE);
   if(controls & 0x10) gameEvent(game, GAME_DROP);
+}
+
+void eventToggleDraw()
+{
+	draw ^= 1;
+}
+
+int eventGetDraw()
+{
+	return draw;
 }
 
 int eventIsRunning()

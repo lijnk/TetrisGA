@@ -25,6 +25,7 @@ static void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 static void cursor_position_callback(GLFWwindow* window, double x, double y)
 {
 	uiCursorEvent(x, y);
+	drawSetReq();
 }
 
 //this is to scroll the console or ui
@@ -34,12 +35,15 @@ static void scroll_callback(GLFWwindow* window, double x_offset, double y_offset
 
 	if(!consoleGetEnabled()) //don't scroll if the console is on
 		uiScrollEvent(x_offset, y_offset);
+
+	drawSetReq();
 }
 
 //these are the ui mouse click events
 static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
 	uiButtonEvent(action, button);
+	drawSetReq();
 }
 
 //strdup because it's not in string.h
@@ -122,6 +126,10 @@ void parseCommand()
 	{
 		consoleClear();
 	}
+	else if(strcmp(argv[0], "toggledraw") == 0 && (argc == 1))
+	{
+		eventToggleDraw();
+	}
 	else if(strcmp(argv[0], "help") == 0 && (argc == 1))
 	{
 		consolePrint("*** Usage ***", CON_MSG);
@@ -131,6 +139,7 @@ void parseCommand()
 		consolePrint("load <filename> - Loads game", CON_MSG);
 		consolePrint("new - Reinitialises game", CON_MSG);
 		consolePrint("clear - Clears console", CON_MSG);
+		consolePrint("toggledraw - Toggles drawing game and simulation on screen", CON_MSG);
 		consolePrint("quit - Quits game", CON_MSG);
 	}
 	else
@@ -158,6 +167,7 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 	//space - drop
 	//esc - quit
 
+	drawSetReq();
 	if(action == GLFW_PRESS)
 	{
 		if(key == GLFW_KEY_GRAVE_ACCENT)
@@ -322,9 +332,8 @@ int main(int argc, char** argv)
 		eventTick();
 
 		//graphics
-		glClear(GL_COLOR_BUFFER_BIT);
-		eventDraw();
-		glfwSwapBuffers(window);
+		//glClear(GL_COLOR_BUFFER_BIT);
+		if(eventDraw()) glfwSwapBuffers(window);
 
 		//events
 		glfwPollEvents();

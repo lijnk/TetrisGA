@@ -818,36 +818,12 @@ void neatForceNext(Pool* pool)
 	pool->timeout = -(pool->alive);
 }
 
-//draws neurons
+//draws neuron topology (does nothing now)
 void neatDraw(Pool* pool)
 {
-	Genome* cg;
-	Species* cs;
-	char v_string[30];
-	char data_string[40];
-	Pix c = {1.f, 1.f, 1.f, 1.f};
-
-	if(pool->species == NULL) return;
-	cs = pool->species[pool->currentSpecies];
-
-	if(cs->genomes == NULL) return;
-	cg = cs->genomes[pool->currentGenome];
-
-	if(cg == NULL || cg->genes == NULL) return;
-
-	sprintf(v_string, "v%d.%d.%d", (cs->id)%100, (pool->generation)%10000, (cg->id)%10000);
-	drawText(NET_X+CELL_SIZE*2, NET_Y+NET_HEIGHT+BORDER-(TEXT_HEIGHT/2), v_string, c); //genome v_string
-
-	//data screen
-	sprintf(data_string, "Generation: %d", pool->generation);
-	drawText(NET_X+CELL_SIZE*2, NET_Y+BORDER+(TEXT_HEIGHT*3), data_string, c);
-	sprintf(data_string, "   Species: %d", cs->id);
-	drawText(NET_X+CELL_SIZE*2, NET_Y+BORDER+(TEXT_HEIGHT*2), data_string, c);
-	sprintf(data_string, "    Genome: %d", cg->id);
-	drawText(NET_X+CELL_SIZE*2, NET_Y+BORDER+TEXT_HEIGHT, data_string, c);
-
-	//Replace this with network drawing code or whatever is listed in the todo (only here for reference)
 	/*
+	//Replace this with network drawing code or whatever is listed in the todo (only here for reference)
+	Pix c = {1.f, 1.f, 1.f, 1.f};
 	for(int i = 0; i < cg->geneSize; i++)
 	{
 		if(cg->genes[i]->input > pool->inputSize - 1) continue;
@@ -939,7 +915,6 @@ void neatTick(Pool** pool, int currentFitness)
 		(*pool)->alive = 0;
 
 		char v_string[30];
-		Pix c = {1.f, 1.f, 1.f, 1.f};
 		cs = (*pool)->species[(*pool)->currentSpecies];
 		cg = cs->genomes[(*pool)->currentGenome];
 
@@ -950,9 +925,21 @@ void neatTick(Pool** pool, int currentFitness)
 
 		if(!GRAPHICS_HEADLESS)
 		{
+			Pix c = {1.f, 1.f, 1.f, 1.f};
+			char data_string[40];
+			drawSetReq();
+			drawText(NET_X+CELL_SIZE*2, NET_Y+NET_HEIGHT+BORDER-(TEXT_HEIGHT/2), v_string, c); //genome v_string
+
+			//data screen
+			sprintf(data_string, "Generation: %d", (*pool)->generation);
+			drawText(NET_X+CELL_SIZE*2, NET_Y+BORDER+(TEXT_HEIGHT*3), data_string, c);
+			sprintf(data_string, "   Species: %d", cs->id);
+			drawText(NET_X+CELL_SIZE*2, NET_Y+BORDER+(TEXT_HEIGHT*2), data_string, c);
+			sprintf(data_string, "    Genome: %d", cg->id);
+			drawText(NET_X+CELL_SIZE*2, NET_Y+BORDER+TEXT_HEIGHT, data_string, c);
+		
 			//drawClearScreen((*pool)->screen);
 			//This is where we draw other things. When that will be coded, I have no idea
-			//This also probably shouldn't be here...
 		}
 	}
 	(*pool)->timeout--;

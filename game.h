@@ -10,6 +10,7 @@
 #include "console.h"
 #include "gvars.h"
 #include "graphics.h"
+#include "events.h"
 
 struct G;
 typedef struct G Game;

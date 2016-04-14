@@ -48,8 +48,8 @@ int gameSetTetromino(Game* game)
 	tetrominoSetY(game->activeMino, 14);
 	tetrominoSetAngle(game->activeMino, 0);
 
-	//these probably shouldn't be here...
 	if(GRAPHICS_HEADLESS) return 0;
+	drawSetReq();
 	drawTetromino(game->fg1, game->nextMino, MINO_X+CELL_SIZE/2, MINO_Y+CELL_SIZE/2, 1);
 
 	for (int i = 0; i < 10; i++)
@@ -168,6 +168,7 @@ void gameTick(Game* game)
 	{
 		Tetromino* temp = tetrominoCopy(game->activeMino);
 
+		if(!eventGetDraw()) drawSetReq();
 		tetrominoMoveY(temp, -1);
 		if(collisionCheck(game, temp)) //check if we've landed
 		{
@@ -399,6 +400,9 @@ void gameDraw(Game* game)
 void gameClean(Game* game)
 {
 	//clean up
+	free(game->bg);
+	free(game->fg1);
+	free(game->fg2);
 	free(game->board);
 	free(game->activeMino);
 }

@@ -26,6 +26,7 @@ Performance
 -Optimise graphics routines (avoid recalling constantly)
 
 Bugs
+-Fix the network information not displaying
 -Fix small memory leak likely happening between generations
 -Fix crash for headless version when exiting
 -Fix stagnation issue (possible bug with keeping best species/genomes)

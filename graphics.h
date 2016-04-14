@@ -26,6 +26,9 @@ enum {
 };
 
 void graphicsInit(); //initialises the font and ui
+void drawSetReq(); //request for drawing (helps not draw all the time)
+void drawResetReq();
+int drawGetReq();
 
 void drawBorder(Pix* screen, int x, int y, int width, int height); //draw border
 void drawMino(Pix* screen, int x, int y, int type); //draws individual mino block
@@ -36,6 +39,7 @@ void drawButton(int tb); //draws button on screen (centre justified)
 void drawSelector(int tb); //draws selector (centre justified)
 void drawTextbox(int tb); //draws text box (left justified)
 void drawScrollbar(int sb); //draws scroll bar
+void drawBG(Pix bg); //draws a complete background in given colour
 void drawClearScreen(Pix* screen); //clears screen
 void drawSaveLoadScreen(int saveload); //draws save/load screen. 1 for save, 0 for load
 void drawUI(); //draws UI portion (also includes console)

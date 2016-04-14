@@ -33,10 +33,12 @@ void eventUnpause(); //unpause the game
 
 void eventCancelButton(); //cancel button
 
-void eventDraw(); //our draw calls
+int eventDraw(); //our draw calls. returns 1 if it draw something
 void eventTick(); //tick the game
 void eventController(); //let the NEAT system control the game
 int eventIsRunning(); //check if the system is on
+void eventToggleDraw(); //toggles whether we are drawing
+int eventGetDraw(); //check whether toggle draw is on or off
 
 #endif
 

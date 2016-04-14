@@ -42,11 +42,16 @@ static const Pix COLOURS[] = {
 	{ 0.0f, 0.0f, 0.0f, 0.0f } //black
 };
 
+static int drawReq;
+
 void graphicsInit()
 {
 	//initialise the font and ui
 	initFont();
 	uiInit();
+
+	//set up draw request variable
+	drawReq = 0;
 
 	//Add the functions for buttons
 	//main screen
@@ -87,6 +92,21 @@ void graphicsInit()
 	uiAddTextbox("savefn", SAVELOAD_DATA_X, SAVELOAD_DATA_Y, SAVELOAD_DATA_W, SAVELOAD_DATA_H, BUTTONS[BUTTON_REG], "save.dat");
 
 	uiSetContext(UI_CONTEXT_MAIN);
+}
+
+void drawSetReq()
+{
+	drawReq = 1;
+}
+
+void drawResetReq()
+{
+	drawReq = 0;
+}
+
+int drawGetReq()
+{
+	return drawReq;
 }
 
 //safe way to draw pixels on screen (does wraparound if we go over)
@@ -643,6 +663,17 @@ void drawScrollbar(int sb)
 	glEnd();
 }
 
+void drawBG(Pix bg)
+{
+	glColor4f(bg.r, bg.g, bg.b, bg.a);
+	glBegin(GL_POLYGON);
+	glVertex2i(0, 0);
+	glVertex2i(0, WINDOW_HEIGHT);
+	glVertex2i(WINDOW_WIDTH, WINDOW_HEIGHT);
+	glVertex2i(WINDOW_WIDTH, 0);
+	glEnd();
+}
+
 void drawClearScreen(Pix* screen)
 {
 	//clear an entire screen
@@ -660,13 +691,8 @@ void drawUI()
 	//background for non-main ui contexts
 	if(uiGetContext() != UI_CONTEXT_MAIN)
 	{
-		glColor4f(0.1f, 0.1f, 0.1f, 1.f);
-		glBegin(GL_POLYGON);
-		glVertex2i(0, 0);
-		glVertex2i(0, WINDOW_HEIGHT);
-		glVertex2i(WINDOW_WIDTH, WINDOW_HEIGHT);
-		glVertex2i(WINDOW_WIDTH, 0);
-		glEnd();
+		Pix bg = {0.1f, 0.1f, 0.1f, 1.f};
+		drawBG(bg);
 	}
 
 	for(int i = 0; i < count; i++)
