@@ -49,10 +49,26 @@ void uiDestroy()
 			if(ui[j]->name != NULL) free(ui[j]->name);
 			free(ui[j]);
 		}
+		for(int j = 0; j < *scrollLength; j++)
+		{
+			if(scroll[j]->group != NULL) free(scroll[j]->group);
+			if(scroll[j]->data != NULL)
+			{
+				for(int k = 0; k < scroll[j]->dataSize; k++)
+				{
+					free(scroll[j]->data[k]);
+				}
+				free(scroll[j]->data);
+			}
+			free(scroll[j]);
+		}
 		free(ui);
+		free(scroll);
 	}
 	free(contextLengths);
 	free(contexts);
+	free(contextScroll);
+	free(contextScrollLengths);	
 }
 
 //switch contexts

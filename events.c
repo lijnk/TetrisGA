@@ -18,7 +18,6 @@ void eventInit()
 
 	//create the sim space
 	game = (Game*)malloc(gameSizeof());
-	pool = (Pool*)malloc(neatSizeof());
 	neatInitMemInfo();
 	gameInit(game);
 	neatInit(&pool);
@@ -224,7 +223,8 @@ void eventPause()
 	uiSetActiveButton("Unpause");
 	pause = 1;
 	//gamePause(game);
-	drawSetReq(DRAW_UI);
+	consolePrint("*** Paused ***", CON_WARN);
+	drawSetReq(DRAW_UI | DRAW_CONSOLE);
 }
 
 void eventUnpause()
@@ -234,7 +234,8 @@ void eventUnpause()
 	uiSetActiveButton("Pause");
 	pause = 0;
 	//gameUnpause(game);
-	drawSetReq(DRAW_UI);
+	consolePrint("*** Unpaused ***", CON_WARN);
+	drawSetReq(DRAW_UI | DRAW_CONSOLE);
 }
 
 void eventCancelButton()

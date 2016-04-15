@@ -25,8 +25,9 @@ void consoleLineNew(consoleLine** cl, const char* text, int status)
 
 void consoleLineDel(consoleLine** cl)
 {
-	//deletes line (we should only be deleting lines at the "beginning")
+	//deletes line (we should only be deleting lines from either "end")
 	if((*cl)->next != NULL) (*cl)->next->prev = NULL;
+	if((*cl)->prev != NULL) (*cl)->prev->next = NULL;
 	free((*cl)->line);
 	free(*cl);
 	*cl = NULL;
@@ -61,7 +62,7 @@ void consoleAddLine(const char* text, int status)
 		firstLine = firstLine->next;
 
 		consoleLineDel(&temp);
-		consoleBufferLength = CONSOLE_BUF_SIZE;
+		consoleBufferLength--;
 	}
 }
 
@@ -75,13 +76,13 @@ void consoleClear()
 
 	firstLine = NULL;
 	lastLine = NULL;
-	for(int i = 0; i < consoleBufferLength; i++)
+	while(consoleBufferLength > 0)
 	{
 		temp = consoleBuffer;
 		consoleBuffer = consoleBuffer->prev;
 		consoleLineDel(&temp);
+		consoleBufferLength--;
 	}
-	consoleBufferLength = 0;
 }
 
 void consoleInit()

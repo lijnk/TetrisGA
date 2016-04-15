@@ -29,9 +29,9 @@ int gameSetTetromino(Game* game)
 	for(int i = 0; i < 32; i++)
 	{
 		newType = (rand() % 7) + 1;
-		if (newType != game->history[0] ||
-			newType != game->history[1] ||
-			newType != game->history[2] ||
+		if (newType != game->history[0] &&
+			newType != game->history[1] &&
+			newType != game->history[2] &&
 			newType != game->history[3])
 		{
 			break;
@@ -66,7 +66,7 @@ int gameInit(Game* game)
 {
 	//initialise game memory
 	Pix c = {1.f, 1.f, 1.f, 1.f};
-	srand(50); //makes this a bit more predictable (probably doesn't help though)
+	srand(time(NULL));
 	game->board = (int**)calloc(18, sizeof(int*));
 	for(int i = 0; i < 18; i++)
 	{
@@ -222,6 +222,7 @@ void gameTick(Game* game)
 		{
 			tetrominoMoveY(game->activeMino, -1);
 		}
+		free(temp);
 	}
 
 	game->stats[GF_TICK]++;
@@ -279,11 +280,17 @@ void gameDrop(Game* game)
 		tetrominoMoveY(temp, -1);
 	}
 
-	if(tetrominoGetY(game->activeMino) == tetrominoGetY(temp) + 1) return; //drop glitch fix so spamming the drop key doesn't mean free time
+	if(tetrominoGetY(game->activeMino) == tetrominoGetY(temp) + 1)
+	{
+		free(temp);
+		return; //drop glitch fix so spamming the drop key doesn't mean free time
+	}
 
 	tetrominoSetY(game->activeMino, tetrominoGetY(temp) + 1);
 	//adjust tick
 	game->stats[GF_TICK] += GAME_SPEED[game->stats[GF_LEVEL]] - (game->stats[GF_TICK] % GAME_SPEED[game->stats[GF_LEVEL]]) + 1;
+
+	free(temp);
 }
 
 void gameRotate(Game* game)
@@ -404,8 +411,16 @@ void gameClean(Game* game)
 	free(game->bg);
 	free(game->fg1);
 	free(game->fg2);
-	free(game->board);
+	free(game->history);
+	free(game->stats);
+	free(game->nextMino);
 	free(game->activeMino);
+
+	for(int i = 0; i < 18; i++)
+	{
+		free(game->board[i]);
+	}
+	free(game->board);
 }
 
 //get stuff

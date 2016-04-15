@@ -102,11 +102,6 @@ float recursiveEval(Pool* pool, Genome* genome, Neuron* neuron)
 		Gene* gene = genome->genes[neuron->inputList[i]];
 		Neuron* next = genome->network[gene->input];
 
-		if(pool->input[gene->input] > 0)
-		{
-			int t = 0;
-		}
-
 		if(gene->input == pool->inputSize) sum += pool->bias * gene->weight; //check bias case
 		else if(gene->input < pool->inputSize) sum += pool->input[gene->input] * gene->weight; //check input neuron case
 		else if(next->solved) sum += next->output; //check solved case
@@ -284,8 +279,9 @@ void mutateConnection(Pool* pool, Genome* genome, int isBias)
 		if(genome->genes[i]->input == g1 && genome->genes[i]->output == g2) return;
 	}
 
-	//something broke
 	initNetwork(&genome);
+	
+	//something broke
 	if(genome->network == NULL)
 	{
 		destroyNetwork(&genome);
@@ -416,7 +412,6 @@ void cullAllButOne(Pool* pool)
 			destroyGenome(&(ptr->genomes[0]));
 			ptr->genomes[0] = ptr->genomes[max];
 			ptr->genomes[max] = NULL;
-			ptr->genomeSize--;
 		}
 
 		for(int i = 1; i < ptr->genomeSize; i++) //kill everybody else
@@ -430,19 +425,27 @@ void cullAllButOne(Pool* pool)
 //cull stagnated species
 void cullStagnate(Pool* pool)
 {
-	if(pool->speciesCount < 2) return; //don't kill last species
+	if(pool->speciesCount < 2)
+	{
+		return; //don't kill last species
+	}
 
 	for(int sp = 0; sp < pool->speciesCount; sp++)
 	{
 		//if the species is the top species, reset stagnate
 		if(pool->species[sp]->topFitness >= pool->topFitness) 
+		{
 			continue;
+		}
 
 		//don't remove non-stagnate species
 		if(pool->species[sp]->stagnate < MAX_STAGNATE)
+		{
 			continue;
+		}
 
 		removeSpecies(&pool, sp); //stagnated species
+		sp--; //hold this back as we just removed something
 	}
 }
 
@@ -455,7 +458,7 @@ void newGeneration(Pool* pool)
 
 	//update the species fitness/stagnation data; aka prepping for mass extinction
 	int sum = 0; //this is for breeding
-	
+
 	pool->topFitness = 0; //reset the top fitness for this generation
 	for(int sp = 0; sp < pool->speciesCount; sp++)
 	{
@@ -473,7 +476,8 @@ void newGeneration(Pool* pool)
 	//breed top species
 	for(int sp = 0; sp < pool->speciesCount; sp++)
 	{
-		int bc = (int)((float)pool->species[sp]->avgFitness / (float)sum * (float)POPULATION);
+		//bc will make better performing species breed more often and do this until it reaches 75% of the population cap
+		int bc = (int)(((float)pool->species[sp]->avgFitness / (float)sum * (float)POPULATION) * 0.75f);
 		for(int i = 0; i < bc; i++)
 		{
 			breed(pool, pool->species[sp], &(nextGen[ngc++]));
@@ -501,6 +505,7 @@ void newGeneration(Pool* pool)
 			breed(pool, s1, &(nextGen[ngc++]));
 		}
 	}
+	updatePopulation(pool);
 
 	//categorise into species
 	for(int i = 0; i < ngc; i++)
@@ -512,6 +517,11 @@ void newGeneration(Pool* pool)
 	updatePopulation(pool);
 	pool->generation++;
 	free(nextGen);
+
+	if(pool->population != POPULATION)
+	{
+		eventPause();
+	}
 }
 
 void neatSave(Pool* pool, const char* filename)
@@ -931,6 +941,7 @@ void neatTick(Pool** pool, int currentFitness)
 				char msg[256];
 				sprintf(msg, "*** Generation %d ***\n", (*pool)->generation);
 				consolePrint(msg, CON_MSG);
+				drawSetReq(DRAW_CONSOLE);
 			}
 		}
 		(*pool)->requestReset = 1;

@@ -30,6 +30,7 @@ void initFont()
 	//set the texture up
 	glTexImage2D(GL_TEXTURE_2D, 0, 4, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, i);
 	glShadeModel(GL_FLAT);
+	stbi_image_free(i);
 }
 
 void printFont(int x, int y, const char* text, float r, float g, float b)

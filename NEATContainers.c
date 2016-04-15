@@ -104,6 +104,7 @@ void destroyPool(Pool** pool)
 {
 	free((*pool)->input);
 	poolInputAlloc--;
+
 	free((*pool)->output);
 	poolOutputAlloc--;
 
@@ -112,8 +113,10 @@ void destroyPool(Pool** pool)
 		if((*pool)->species[i] == NULL) continue;
 		destroySpecies(&((*pool)->species[i]));
 	}
+
 	free((*pool)->species);
 	speciesListAlloc--;
+
 	free(*pool);
 	poolAlloc--;
 	(*pool) = NULL;

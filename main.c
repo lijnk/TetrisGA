@@ -46,8 +46,11 @@ static void scroll_callback(GLFWwindow* window, double x_offset, double y_offset
 //these are the ui mouse click events
 static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
-	uiButtonEvent(action, button);
-	drawSetReq(DRAW_UI);
+	if(eventGetDraw())
+	{
+		uiButtonEvent(action, button);
+		drawSetReq(DRAW_UI);
+	}
 }
 
 //strdup because it's not in string.h
@@ -93,7 +96,7 @@ void splitCMD(const char* input, char*** params, int* pcount)
 void parseCommand()
 {
 	if(!consoleGetEnabled()) return;
-	char* printcmd = (char*)calloc(strlen(consoleGetLine()) + 3, CON_MSG);
+	char* printcmd = (char*)calloc(strlen(consoleGetLine()) + 3, sizeof(char));
 	sprintf(printcmd, "> %s", consoleGetLine());
 	consolePrint(printcmd, CON_MSG);
 	free(printcmd);
@@ -377,6 +380,12 @@ int main(int argc, char** argv)
 	{
 		eventPause(); //start paused
 	}
+
+	//some debug starter stuff
+	fpscap = 0;
+	consoleToggleEnabled();
+	eventToggleDraw();
+	drawSetReq(DRAW_CONSOLE);
 
 	while(!glfwWindowShouldClose(window) && eventIsRunning())
 	{
