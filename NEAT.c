@@ -435,7 +435,8 @@ void cullStagnate(Pool* pool)
 	for(int sp = 0; sp < pool->speciesCount; sp++)
 	{
 		//if the species is the top species, reset stagnate
-		if(pool->species[sp]->topFitness >= pool->topFitness) pool->species[sp]->stagnate = 0;
+		if(pool->species[sp]->topFitness >= pool->topFitness) 
+			continue;
 
 		//don't remove non-stagnate species
 		if(pool->species[sp]->stagnate < MAX_STAGNATE)
