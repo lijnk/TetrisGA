@@ -6,6 +6,7 @@
 #include "NEATContainers.h"
 #include "graphics.h"
 #include "gvars.h"
+#include "events.h"
 
 //save/load info
 #define PBLOCKSIZE 10

@@ -28,7 +28,8 @@ Bugs
 -Fix the network information not displaying
 -Fix small memory leak likely happening between generations
 -Fix crash for headless version when exiting
--Fix stagnation issue (possible bug with keeping best species/genomes)
+-Fix stagnation issue (make it keep the top species, switch updateSpecies to be pool level instead of species level (to keep 1-left species))
+-Fix issue where program runs slower when toggledraw is turned on
 
 Extra
 -Add name for each species (pulls random name from file)

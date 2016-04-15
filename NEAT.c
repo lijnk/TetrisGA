@@ -369,18 +369,30 @@ void mutate(Pool* pool, Genome* genome)
 //culls worst half of species
 void cullHalf(Pool* pool)
 {
-	//iterate through and remove the worst half of species
-	for(int sp = 0; sp < pool->speciesCount/2; sp++)
+	for(int sp = 0; sp < pool->speciesCount; sp++)
 	{
-		int min = sp;
-		for(int i = sp; i < pool->speciesCount; i++)
+		for(int gm = 0; gm < pool->species[sp]->genomeSize/2; gm++)
 		{
-			if(pool->species[i]->avgFitness < min)
+			//for half of the genomes in the species, first find the minimum
+			int min = 0;
+			for(int i = 0; i < pool->species[sp]->genomeSize; i++)
 			{
-				min = i;
+				if(pool->species[sp]->genomes[i]->fitness < pool->species[sp]->genomes[min]->fitness)
+				{
+					min = i;
+				}
 			}
+
+			//now, kill the minimum
+			destroyGenome(&(pool->species[sp]->genomes[min]));
+
+			//shift everything down
+			for(int i = min + 1; i < pool->species[sp]->genomeSize; i++)
+			{
+				pool->species[sp]->genomes[i-1] = pool->species[sp]->genomes[i];
+			}
+			pool->species[sp]->genomes[pool->species[sp]->genomeSize--] = NULL; //null the last element
 		}
-		removeSpecies(&pool, min); //genocide
 	}
 }
 
@@ -422,10 +434,14 @@ void cullStagnate(Pool* pool)
 
 	for(int sp = 0; sp < pool->speciesCount; sp++)
 	{
-		if(pool->species[sp]->stagnate >= MAX_STAGNATE)
-		{
-			removeSpecies(&pool, sp); //stagnated species
-		}
+		//if the species is the top species, reset stagnate
+		if(pool->species[sp]->topFitness >= pool->topFitness) pool->species[sp]->stagnate = 0;
+
+		//don't remove non-stagnate species
+		if(pool->species[sp]->stagnate < MAX_STAGNATE)
+			continue;
+
+		removeSpecies(&pool, sp); //stagnated species
 	}
 }
 
@@ -438,10 +454,16 @@ void newGeneration(Pool* pool)
 
 	//update the species fitness/stagnation data; aka prepping for mass extinction
 	int sum = 0; //this is for breeding
+	
+	pool->topFitness = 0; //reset the top fitness for this generation
 	for(int sp = 0; sp < pool->speciesCount; sp++)
 	{
 		updateSpeciesData(pool->species[sp]);
 		sum += pool->species[sp]->avgFitness;
+
+		//update top fitness
+		if(pool->species[sp]->topFitness > pool->topFitness)
+			pool->topFitness = pool->species[sp]->topFitness;
 	}
 	//kill off the bad ones
 	cullHalf(pool);
@@ -923,11 +945,11 @@ void neatTick(Pool** pool, int currentFitness)
 		
 		//printGenes((*pool)->species[(*pool)->currentSpecies]->genomes[(*pool)->currentGenome]);
 
-		if(!GRAPHICS_HEADLESS)
+		if(!GRAPHICS_HEADLESS && eventGetDraw())
 		{
 			Pix c = {1.f, 1.f, 1.f, 1.f};
 			char data_string[40];
-			drawSetReq();
+			drawSetReq(DRAW_NEAT);
 			drawText(NET_X+CELL_SIZE*2, NET_Y+NET_HEIGHT+BORDER-(TEXT_HEIGHT/2), v_string, c); //genome v_string
 
 			//data screen

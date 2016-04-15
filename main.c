@@ -27,25 +27,27 @@ static void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 static void cursor_position_callback(GLFWwindow* window, double x, double y)
 {
 	uiCursorEvent(x, y);
-	drawSetReq();
+	drawSetReq(DRAW_UI);
 }
 
 //this is to scroll the console or ui
 static void scroll_callback(GLFWwindow* window, double x_offset, double y_offset)
 {
 	consoleScroll((int)y_offset);
+	drawSetReq(DRAW_CONSOLE);
 
 	if(!consoleGetEnabled()) //don't scroll if the console is on
+	{
 		uiScrollEvent(x_offset, y_offset);
-
-	drawSetReq();
+		drawSetReq(DRAW_UI);
+	}
 }
 
 //these are the ui mouse click events
 static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
 	uiButtonEvent(action, button);
-	drawSetReq();
+	drawSetReq(DRAW_UI);
 }
 
 //strdup because it's not in string.h
@@ -215,7 +217,15 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 	//space - drop
 	//esc - quit
 
-	drawSetReq();
+	if(consoleGetEnabled())
+	{
+		drawSetReq(DRAW_CONSOLE);
+	}
+	else
+	{
+		drawSetReq(DRAW_UI);
+	}
+
 	if(action == GLFW_PRESS)
 	{
 		if(key == GLFW_KEY_GRAVE_ACCENT)
@@ -361,9 +371,12 @@ int main(int argc, char** argv)
 	if(GRAPHICS_HEADLESS)
 	{
 		eventLoad("tempbk.dat");
+		eventUnpause();
 	}
-
-	eventPause(); //start paused
+	else
+	{
+		eventPause(); //start paused
+	}
 
 	while(!glfwWindowShouldClose(window) && eventIsRunning())
 	{
@@ -371,7 +384,8 @@ int main(int argc, char** argv)
 		double curr = glfwGetTime();
 		double elapse = 0;
 
-		if(fpscap > 0)
+		double start, end;
+		if(fpscap > 0 && !GRAPHICS_HEADLESS)
 		{
 			while(elapse < (1.0 / fpscap))
 			{
@@ -379,15 +393,19 @@ int main(int argc, char** argv)
 			}
 		}
 
+		start = glfwGetTime();
 		//logic
 		eventTick();
 
 		//graphics
-		//glClear(GL_COLOR_BUFFER_BIT);
 		if(eventDraw()) glfwSwapBuffers(window);
 
 		//events
 		glfwPollEvents();
+		end = glfwGetTime() - start;
+
+		//put this into a displayfps command
+		//printf("Tick time: %f\n", end);
 	}
 
 	//cleanup

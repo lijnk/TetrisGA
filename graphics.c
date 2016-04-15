@@ -94,9 +94,9 @@ void graphicsInit()
 	uiSetContext(UI_CONTEXT_MAIN);
 }
 
-void drawSetReq()
+void drawSetReq(int v)
 {
-	drawReq = 1;
+	drawReq |= v;
 }
 
 void drawResetReq()

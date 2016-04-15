@@ -25,8 +25,10 @@ enum {
 	SELECTOR
 };
 
+enum {DRAW_CONSOLE=1, DRAW_GAME=2, DRAW_UI=4, DRAW_NEAT=8};
+
 void graphicsInit(); //initialises the font and ui
-void drawSetReq(); //request for drawing (helps not draw all the time)
+void drawSetReq(int v); //request for drawing (helps not draw all the time)
 void drawResetReq();
 int drawGetReq();
 

@@ -6,18 +6,22 @@ static Pool* pool;
 static int running;
 static int globalTick;
 static int draw;
+static int pause;
 
 void eventInit()
 {
-	//initialise everything
+	//initialise important vars
+	globalTick = 0;
+	running = 1;
+	draw = 1;
+	pause = 1;
+
+	//create the sim space
 	game = (Game*)malloc(gameSizeof());
 	pool = (Pool*)malloc(neatSizeof());
 	neatInitMemInfo();
 	gameInit(game);
 	neatInit(&pool);
-	globalTick = 0;
-	running = 1;
-	draw = 1;
 }
 
 void eventDestroy()
@@ -38,7 +42,7 @@ void eventNewButton()
 	//event for new button
 	eventPause();
 	uiSetContext(UI_CONTEXT_NEW);
-	drawSetReq();
+	drawSetReq(DRAW_UI);
 }
 
 void eventNew()
@@ -49,7 +53,7 @@ void eventNew()
 	neatInit(&pool);
 	gameRestart(game);
 	eventPause();
-	drawSetReq();
+	drawSetReq(DRAW_UI);
 }
 
 void eventNewSave()
@@ -58,7 +62,7 @@ void eventNewSave()
 	eventSave(uiGetTextboxText("savefn"));
 	uiSetContext(UI_CONTEXT_MAIN);
 	eventNew();
-	drawSetReq();
+	drawSetReq(DRAW_UI);
 }
 
 void eventNewCancel()
@@ -66,7 +70,7 @@ void eventNewCancel()
 	//event for discard button within the "new" screen
 	uiSetContext(UI_CONTEXT_MAIN);
 	eventNew();
-	drawSetReq();
+	drawSetReq(DRAW_UI);
 }
 
 void eventSave(const char* filename)
@@ -80,7 +84,7 @@ void eventSaveButton()
 	//save button on the main screen
 	eventPause();
 	uiSetContext(UI_CONTEXT_SAVE);
-	drawSetReq();
+	drawSetReq(DRAW_UI);
 }
 
 void eventSaveSaveButton()
@@ -102,7 +106,7 @@ void eventSaveSaveButton()
 	eventSave(filename);
 	uiSetContext(UI_CONTEXT_MAIN);
 	if(appended) free(filename);
-	drawSetReq();
+	drawSetReq(DRAW_UI);
 }
 
 void eventLoad(const char* filename)
@@ -134,7 +138,7 @@ void eventLoadButton()
 		free(data[i]);
 	}
 	free(data);
-	drawSetReq();
+	drawSetReq(DRAW_UI);
 }
 
 void eventLoadLoadButton()
@@ -150,7 +154,7 @@ void eventLoadLoadButton()
 	//load the system and switch contexts back to main
 	eventLoad(filename);
 	uiSetContext(UI_CONTEXT_MAIN);
-	drawSetReq();
+	drawSetReq(DRAW_UI);
 }
 
 void eventGetLoadInfo(const char* dir, char*** data, int* size)
@@ -218,8 +222,9 @@ void eventPause()
 	//pause game (swaps pause/unpause buttons)
 	uiSetInactiveButton("Pause");
 	uiSetActiveButton("Unpause");
-	gamePause(game);
-	drawSetReq();
+	pause = 1;
+	//gamePause(game);
+	drawSetReq(DRAW_UI);
 }
 
 void eventUnpause()
@@ -227,14 +232,15 @@ void eventUnpause()
 	//unpause game (swaps pause/unpause buttons)
 	uiSetInactiveButton("Unpause");
 	uiSetActiveButton("Pause");
-	gameUnpause(game);
-	drawSetReq();
+	pause = 0;
+	//gameUnpause(game);
+	drawSetReq(DRAW_UI);
 }
 
 void eventCancelButton()
 {
 	uiSetContext(UI_CONTEXT_MAIN);
-	drawSetReq();
+	drawSetReq(DRAW_UI);
 }
 
 int eventDraw()
@@ -243,15 +249,19 @@ int eventDraw()
 	if(GRAPHICS_HEADLESS) return 0; //turn this on in gvars.h to go super fast
 	if(!drawGetReq()) return 0; //so we don't draw a million times per second
 
-	glClear(GL_COLOR_BUFFER_BIT);
 	if(!draw)
 	{
+		if(!(drawGetReq() & DRAW_CONSOLE)) return 0;
+	
+		glClear(GL_COLOR_BUFFER_BIT);
 		Pix bg = {0.1f, 0.1f, 0.1f, 1.f};
 		drawBG(bg);
 		drawConsole();
+		drawResetReq();
 		return 1;
 	}
 
+	glClear(GL_COLOR_BUFFER_BIT);
 	//internal drawing stuff
 	gameDraw(game);
 	neatDraw(pool);
@@ -272,9 +282,11 @@ int eventDraw()
 void eventTick()
 {
 	//a single tick
+	if(pause) return;;
+
 	gameTick(game);
 	if(gameGetGameover(game)) neatForceNext(pool);
-	if(globalTick % 5 == 0 && !(gameGetPause(game))) //every 5 ticks so we don't spam the NEAT system unnecessarily
+	if(globalTick % 5 == 0) //every 5 ticks so we don't spam the NEAT system unnecessarily
 	{
 		int ts1[(10*18)]; //tileset
 		int ts2[(10*18)]; //extended tileset

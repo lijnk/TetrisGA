@@ -97,6 +97,7 @@ void initPool(Pool** pool)
 	(*pool)->bias = 1.f;
 
 	(*pool)->speciesIDCTR = 0;
+	(*pool)->topFitness = 0;
 }
 
 void destroyPool(Pool** pool)

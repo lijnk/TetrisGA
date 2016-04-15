@@ -74,6 +74,7 @@ struct _pool {
 	int population; //current population
 
 	int speciesIDCTR; //species ID counter
+	int topFitness; //used for preserving best species in stagnate situations
 
 	int currentGenome; //current genome being evaluated
 	int currentSpecies; //current species being evaluated
