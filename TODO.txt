@@ -26,9 +26,6 @@ Performance
 
 Bugs
 -Fix the network information not displaying
--Fix issue where almost no genes are being added after loading save
--Fix bug where it randomly crashes
--Fix bug where quitting occasionally crashes
 
 Extra
 -Add name for each species (pulls random name from file)

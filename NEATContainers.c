@@ -311,7 +311,7 @@ void removeSpecies(Pool** pool, int num)
 	{
 		(*pool)->species[i-1] = (*pool)->species[i];
 	}
-	(*pool)->speciesCount--;
+	(*pool)->speciesCount -= 1;
 }
 
 void initGenome(Genome** genome)

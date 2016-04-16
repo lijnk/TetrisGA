@@ -367,7 +367,8 @@ void cullHalf(Pool* pool)
 {
 	for(int sp = 0; sp < pool->speciesCount; sp++)
 	{
-		for(int gm = 0; gm < pool->species[sp]->genomeSize/2; gm++)
+		int gms = pool->species[sp]->genomeSize/2;
+		for(int gm = 0; gm < gms; gm++)
 		{
 			//for half of the genomes in the species, first find the minimum
 			int min = 0;
@@ -387,7 +388,8 @@ void cullHalf(Pool* pool)
 			{
 				pool->species[sp]->genomes[i-1] = pool->species[sp]->genomes[i];
 			}
-			pool->species[sp]->genomes[pool->species[sp]->genomeSize--] = NULL; //null the last element
+			pool->species[sp]->genomeSize -= 1;
+			pool->species[sp]->genomes[pool->species[sp]->genomeSize] = NULL; //null the last element
 		}
 	}
 }
@@ -470,14 +472,15 @@ void newGeneration(Pool* pool)
 			pool->topFitness = pool->species[sp]->topFitness;
 	}
 	//kill off the bad ones
-	cullHalf(pool);
 	cullStagnate(pool);
+	cullHalf(pool);
 
 	//breed top species
 	for(int sp = 0; sp < pool->speciesCount; sp++)
 	{
 		//bc will make better performing species breed more often and do this until it reaches 75% of the population cap
-		int bc = (int)(((float)pool->species[sp]->avgFitness / (float)sum * (float)POPULATION) * 0.75f);
+		float pc = (float)pool->species[sp]->avgFitness / (float)sum;
+		int bc = (int)((pc * (float)(POPULATION - pool->speciesCount)) * 0.75f);
 		for(int i = 0; i < bc; i++)
 		{
 			breed(pool, pool->species[sp], &(nextGen[ngc++]));
@@ -488,6 +491,8 @@ void newGeneration(Pool* pool)
 	cullAllButOne(pool);
 	updatePopulation(pool);
 
+	int cpop = pool->population;
+	int cngc = ngc;
 	//breed until we reach the population cap
 	for(int i = pool->population + ngc; i < POPULATION; i++)
 	{
@@ -520,6 +525,9 @@ void newGeneration(Pool* pool)
 
 	if(pool->population != POPULATION)
 	{
+		char msg[256];
+		sprintf(msg, "Population mismatch: (%d + %d) -> %d\n", cpop, cngc, pool->population);
+		consolePrint(msg, CON_ERR);
 		eventPause();
 	}
 }
@@ -953,7 +961,7 @@ void neatTick(Pool** pool, int currentFitness)
 		cg = cs->genomes[(*pool)->currentGenome];
 
 		sprintf(v_string, "V%d.%d.%d", (cs->id)%100, ((*pool)->generation)%10000, (cg->id)%10000);
-		consolePrint(v_string, CON_MSG);
+		//consolePrint(v_string, CON_MSG);
 		
 		//printGenes((*pool)->species[(*pool)->currentSpecies]->genomes[(*pool)->currentGenome]);
 
@@ -976,8 +984,8 @@ void neatTick(Pool** pool, int currentFitness)
 			//This is where we draw other things. When that will be coded, I have no idea
 		}
 	}
-	(*pool)->timeout--;
-	(*pool)->alive++;
+	(*pool)->timeout -= 1;
+	(*pool)->alive += 1;
 }
 
 //destroys NEAT system

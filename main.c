@@ -382,10 +382,12 @@ int main(int argc, char** argv)
 	}
 
 	//some debug starter stuff
+	/*
 	fpscap = 0;
 	consoleToggleEnabled();
 	eventToggleDraw();
 	drawSetReq(DRAW_CONSOLE);
+	*/
 
 	while(!glfwWindowShouldClose(window) && eventIsRunning())
 	{
